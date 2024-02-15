@@ -5,11 +5,8 @@ import entities.Entity;
 import models.TexturedModel;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
-import renderEngine.DisplayManager;
-import renderEngine.Loader;
+import renderEngine.*;
 import models.RawModel;
-import renderEngine.OBJLoader;
-import renderEngine.Renderer;
 import shader.Light;
 import shader.StaticShader;
 import textures.ModelTexture;
@@ -20,7 +17,7 @@ public class MainGameLoop {
         DisplayManager.createDisplay();
         Loader loader = new Loader();
         StaticShader shader = new StaticShader();
-        Renderer renderer = new Renderer(shader);
+        MasterRenderer renderer = new MasterRenderer();
 
         RawModel model = OBJLoader.loadObjModel("stall", loader);
 
@@ -37,20 +34,15 @@ public class MainGameLoop {
         while(!Display.isCloseRequested()){
             entity.increaseRotation(0,1,0);
             camera.move();
-            renderer.prepare();
-            shader.start();
             light.setPosition(camera.getPosition());
-            //start loading uniforms
-            shader.loadLight(light);
-            shader.loadViewMatrix(camera);
-            //end loading uniforms
-            renderer.render(entity,shader);
-            shader.stop();
+            renderer.processEntity(entity);
+            renderer.render(light, camera);
             DisplayManager.updateDisplay();
         }
 
         shader.cleanUp();
         loader.cleanUp();
+        renderer.cleanUp();
         DisplayManager.closeDisplay();
     }
 }
